@@ -1,33 +1,13 @@
 """
 Example Sellar Problem Definition
 """
-# --- BLOCK MPI4PY TO FIX OPENMDAO THREADING ---
-import sys, types, os, warnings
+import os, sys, warnings
 os.environ["OPENMDAO_REPORTS"] = "0"
 os.environ['OPENMDAO_REQUIRE_MPI'] = 'false'
+os.environ['OPENMDAO_USE_MPI'] = '0'
 warnings.filterwarnings('ignore', category=RuntimeWarning)
 warnings.filterwarnings('ignore', module='openmdao')
-class _FakeComm:
-    size = 1; rank = 0
-    def Barrier(self): pass
-    def bcast(self, obj, root=0): return obj
-    def allreduce(self, obj, op=None): return obj
-    def gather(self, obj, root=0): return [obj]
-    def scatter(self, obj, root=0): return obj
-    def send(self, *a, **k): pass
-    def recv(self, *a, **k): return None
-class _FakeMPIModule(types.ModuleType):
-    COMM_WORLD = _FakeComm(); COMM_SELF = _FakeComm(); Comm = _FakeComm
-    UNDEFINED = -1; SUM = 0; MAX = 1; MIN = 2; LAND = 3; LOR = 4
-    def Is_initialized(self): return False
-    def Finalize(self): pass
-_fake_mpi4py = types.ModuleType('mpi4py')
-_fake_MPI = _FakeMPIModule('mpi4py.MPI')
-_fake_mpi4py.MPI = _fake_MPI
-sys.modules['mpi4py'] = _fake_mpi4py
-sys.modules['mpi4py.MPI'] = _fake_MPI
 
-# --- ACTUAL IMPORTS ---
 import numpy as np
 import pandas as pd
 from scipy.stats import qmc
